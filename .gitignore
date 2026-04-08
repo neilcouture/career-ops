@@ -1,3 +1,6 @@
+
+_NOGIT
+
 # Personal data (user fills these)
 data/applications.md
 data/pipeline.md
@@ -14,6 +17,8 @@ batch/tracker-additions/*.tsv
 !batch/tracker-additions/.gitkeep
 jds/*
 !jds/.gitkeep
+
+cv.md
 
 # User config and customization (never auto-updated)
 config/profile.yml
