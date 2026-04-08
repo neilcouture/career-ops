@@ -39,7 +39,7 @@ func ParseApplications(careerOpsPath string) []model.CareerApplication {
 	}
 
 	lines := strings.Split(string(content), "\n")
-	apps := make([]model.CareerApplication, 0)
+	var apps []model.CareerApplication
 	num := 0
 
 	for _, line := range lines {
@@ -490,6 +490,8 @@ func NormalizeStatus(raw string) string {
 	case strings.Contains(s, "discarded") || strings.Contains(s, "descartado") || s == "descartada" || s == "cerrada" || s == "cancelada" ||
 		strings.HasPrefix(s, "duplicado") || strings.HasPrefix(s, "dup"):
 		return "discarded"
+	case s == "triage":
+		return "triage"
 	case strings.Contains(s, "evaluated") || strings.Contains(s, "evaluada") || s == "condicional" || s == "hold" || s == "monitor" || s == "evaluar" || s == "verificar":
 		return "evaluated"
 	default:
@@ -540,11 +542,7 @@ func UpdateApplicationStatus(careerOpsPath string, app model.CareerApplication, 
 	filePath := filepath.Join(careerOpsPath, "applications.md")
 	content, err := os.ReadFile(filePath)
 	if err != nil {
-		filePath = filepath.Join(careerOpsPath, "data", "applications.md")
-		content, err = os.ReadFile(filePath)
-		if err != nil {
-			return err
-		}
+		return err
 	}
 
 	lines := strings.Split(string(content), "\n")
@@ -594,8 +592,10 @@ func StatusPriority(status string) int {
 		return 2
 	case "applied":
 		return 3
-	case "evaluated":
+	case "triage":
 		return 4
+	case "evaluated":
+		return 5
 	case "skip":
 		return 5
 	case "rejected":

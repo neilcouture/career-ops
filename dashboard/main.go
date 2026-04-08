@@ -89,10 +89,8 @@ func (m appModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				cmd = exec.Command("open", url)
 			case "linux":
 				cmd = exec.Command("xdg-open", url)
-			case "windows":
-				cmd = exec.Command("cmd", "/c", "start", "", url)
 			default:
-				cmd = exec.Command("xdg-open", url)
+				cmd = exec.Command("open", url)
 			}
 			_ = cmd.Start()
 			return nil
