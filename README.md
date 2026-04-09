@@ -1,5 +1,12 @@
 # Career-Ops
 
+This is a forked repository.
+
+* Translated to English
+* Much better usage of Tokens [Node Scripts - Save Tokens](#node-scripts---to-save-tokens)
+* Many task are now node based instead of claude based
+
+  
 > AI-powered job search pipeline built on Claude Code. Evaluate offers, generate tailored CVs, scan portals, and track everything -- powered by AI agents.
 
 **[Node Scripts - Save Tokens](#node-scripts---to-save-tokens)**
