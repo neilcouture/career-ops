@@ -33,7 +33,7 @@ function parsePortals(text) {
 
   // Extract title_filter arrays
   for (const section of ['positive', 'negative', 'seniority_boost']) {
-    const re = new RegExp(`^\\s+${section}:\\s*\\n((?:\\s+-\\s*"[^"]*"\\s*\\n?)*)`, 'gm');
+    const re = new RegExp(`^[ \\t]+${section}:[ \\t]*\\n((?:[ \\t]*(?:#[^\\n]*|-\\s*"[^"]*")[ \\t]*\\n)*)`, 'gm');
     const m = re.exec(text);
     if (m) {
       titleFilter[section] = [...m[1].matchAll(/"([^"]*)"/g)].map(x => x[1]);
@@ -79,11 +79,14 @@ function hasSeniorityBoost(title, filter) {
 function buildSeenUrls() {
   const seen = new Set();
 
-  // scan-history.tsv
+  // scan-history.tsv — only skip URLs that were actually added or intentionally skipped as dup
+  // (skipped_title entries are re-evaluated so a fixed filter can catch previously missed roles)
   if (existsSync(HISTORY_FILE)) {
     for (const line of readFileSync(HISTORY_FILE, 'utf8').split('\n').slice(1)) {
-      const url = line.split('\t')[0];
-      if (url) seen.add(url);
+      const parts = line.split('\t');
+      const url = parts[0];
+      const status = parts[8];
+      if (url && status !== 'skipped_title') seen.add(url);
     }
   }
 
