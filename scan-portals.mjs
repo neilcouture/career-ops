@@ -79,14 +79,14 @@ function hasSeniorityBoost(title, filter) {
 function buildSeenUrls() {
   const seen = new Set();
 
-  // scan-history.tsv — only skip URLs that were actually added or intentionally skipped as dup
-  // (skipped_title entries are re-evaluated so a fixed filter can catch previously missed roles)
+  // scan-history.tsv — only skip URLs that were actually committed to pipeline.md
+  // (skipped_title and scanned entries are re-evaluated on next run)
   if (existsSync(HISTORY_FILE)) {
     for (const line of readFileSync(HISTORY_FILE, 'utf8').split('\n').slice(1)) {
       const parts = line.split('\t');
       const url = parts[0];
       const status = parts[8];
-      if (url && status !== 'skipped_title') seen.add(url);
+      if (url && status !== 'skipped_title' && status !== 'scanned') seen.add(url);
     }
   }
 
@@ -221,7 +221,8 @@ async function main() {
 
     const boost = hasSeniorityBoost(job.title, titleFilter) ? ' ★' : '';
     added.push({ ...job, boost });
-    historyLines.push([job.url, TODAY, platform, job.title, job.company, job.location, '', '', 'added'].join('\t'));
+    const historyStatus = WRITE_PIPELINE ? 'added' : 'scanned';
+    historyLines.push([job.url, TODAY, platform, job.title, job.company, job.location, '', '', historyStatus].join('\t'));
   }
 
   // Output results as TSV to stdout

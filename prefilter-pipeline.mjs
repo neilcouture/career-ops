@@ -53,31 +53,38 @@ function classify(line) {
   const parts = line.split(' | ');
   const location = parts.length >= 4 ? parts.slice(3).join(' | ').trim() : '';
 
-  if (!location) return 'keep_ambiguous'; // no location = ambiguous, keep
+  // No location = drop (user wants remote only, can't confirm)
+  if (!location) return 'skip_unknown';
 
   const loc = location;
-
-  // Hard keep: Canada
-  if (CANADA_RE.test(loc)) return 'keep_canada';
-
-  // Hard keep: Global remote
-  if (GLOBAL_REMOTE_RE.test(loc)) return 'keep_global_remote';
-
-  // Hard skip: US-only remote
-  if (US_ONLY_RE.test(loc)) return 'skip_us_remote';
-
-  // Hard skip: onsite in non-viable city (only if no remote signal)
   const hasRemote = /\bremote\b/i.test(loc);
+  const hasCanada = CANADA_RE.test(loc);
+  const hasUS = US_CITY_RE.test(loc) || /united states|US-Remote|Remote US/i.test(loc);
+
+  // Must be remote
   if (!hasRemote) {
-    if (ONSITE_NON_VIABLE_RE.test(loc)) return 'skip_onsite_foreign';
-    if (US_CITY_RE.test(loc)) return 'skip_us_onsite';
+    // Exception: Canada onsite/hybrid is still viable
+    if (hasCanada) return 'keep_canada_onsite';
+    return 'skip_not_remote';
   }
 
-  // Has "remote" but not clearly global or US-only — keep for manual review
-  if (hasRemote) return 'keep_remote_ambiguous';
+  // Remote + Canada = keep
+  if (hasCanada) return 'keep_canada_remote';
 
-  // Remaining: unknown locations — keep
-  return 'keep_unknown';
+  // Remote + global signal = keep
+  if (GLOBAL_REMOTE_RE.test(loc)) return 'keep_global_remote';
+
+  // Remote + US only = skip (requires sponsorship, usually not offered)
+  if (US_ONLY_RE.test(loc)) return 'skip_us_remote';
+
+  // Remote but foreign-only (London, Berlin, etc.) = skip
+  if (ONSITE_NON_VIABLE_RE.test(loc) && !hasUS) return 'skip_remote_foreign';
+
+  // Remote + US city (ambiguous on sponsorship) = keep for now
+  if (hasUS) return 'keep_us_remote_ambiguous';
+
+  // Remote + unknown geo = keep
+  return 'keep_remote_unknown';
 }
 
 // ── Process ─────────────────────────────────────────────────────────────────
